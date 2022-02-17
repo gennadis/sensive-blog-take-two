@@ -31,13 +31,15 @@ def serialize_tag(tag):
 def index(request):
     most_popular_posts = (
         Post.objects.popular()
-        .prefetch_related("author", "tags")[:5]
+        .prefetch_related("author")[:5]
+        .fetch_with_tags_count()
         .fetch_with_comments_count()
     )
 
     fresh_posts = (
         Post.objects.annotate(comments_count=Count("comments"))
-        .prefetch_related("author", "tags")
+        .prefetch_related("author")
+        .fetch_with_tags_count()
         .order_by("-published_at")
     )
     most_fresh_posts = fresh_posts[:5]
@@ -92,6 +94,7 @@ def post_detail(request, slug):
     most_popular_posts = (
         Post.objects.popular()
         .prefetch_related("author")[:5]
+        .fetch_with_tags_count()
         .fetch_with_comments_count()
     )
 
@@ -115,12 +118,14 @@ def tag_filter(request, tag_title):
     most_popular_posts = (
         Post.objects.popular()
         .prefetch_related("author")[:5]
+        .fetch_with_tags_count()
         .fetch_with_comments_count()
     )
 
     related_posts = (
         tag.posts.order_by("-published_at")[:20]
         .prefetch_related("author")
+        .fetch_with_tags_count()
         .fetch_with_comments_count()
     )
 

@@ -28,6 +28,15 @@ class PostQuerySet(models.QuerySet):
 
         return self
 
+    def fetch_with_tags_count(self):
+        queryset = Tag.objects.annotate(posts_with_tag_count=models.Count("posts"))
+
+        tags_with_posts_count = self.prefetch_related(
+            models.Prefetch("tags", queryset=queryset)
+        )
+
+        return tags_with_posts_count
+
 
 class Post(models.Model):
     objects = PostQuerySet.as_manager()
