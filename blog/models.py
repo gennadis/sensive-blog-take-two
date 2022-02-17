@@ -3,7 +3,14 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 
 
+class PostQuerySet(models.QuerySet):
+    def year(self, year):
+        posts_at_year = self.filter(published_at__year=year).order_by("published_at")
+        return posts_at_year
+
+
 class Post(models.Model):
+    objects = PostQuerySet.as_manager()
     title = models.CharField("Заголовок", max_length=200)
     text = models.TextField("Текст")
     slug = models.SlugField("Название в виде url", max_length=200)
@@ -33,7 +40,16 @@ class Post(models.Model):
         verbose_name_plural = "посты"
 
 
+class TagQuerySet(models.QuerySet):
+    def popular(self):
+        popular_tags = self.annotate(
+            related_posts_count=models.Count("posts")
+        ).order_by("-related_posts_count")
+        return popular_tags
+
+
 class Tag(models.Model):
+    objects = TagQuerySet.as_manager()
     title = models.CharField("Тег", max_length=20, unique=True)
 
     def __str__(self):
